@@ -19,7 +19,8 @@ var Editor = _react2.default.createClass({
     onEnter: _react2.default.PropTypes.func,
     onAltEnter: _react2.default.PropTypes.func,
     onCtrlEnter: _react2.default.PropTypes.func,
-    onShiftEnter: _react2.default.PropTypes.func
+    onShiftEnter: _react2.default.PropTypes.func,
+    onChange: _react2.default.PropTypes.func
   },
 
   componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
@@ -120,6 +121,10 @@ var Editor = _react2.default.createClass({
   handleInput: function handleInput() {
     if (this._isCompositing) return;
     this.filterHTML((0, _reactDom.findDOMNode)(this));
+
+    if (this.props.onChange) {
+      this.props.onChange(this.getContent());
+    }
   },
   handleKeyDown: function handleKeyDown(e) {
     if (ENTER_KEY === e.keyCode) {

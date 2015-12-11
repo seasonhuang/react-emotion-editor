@@ -76,6 +76,9 @@
 	    this.refs.editor.insertHTML('\n');
 	    evt.preventDefault();
 	  },
+	  handleChange: function handleChange(content) {
+	    console.log('[content changed] ', content);
+	  },
 	  renderRecords: function renderRecords() {
 	    return this.state.records.map(function (record, index) {
 	      return React.createElement(
@@ -19803,7 +19806,8 @@
 	    onEnter: _react2.default.PropTypes.func,
 	    onAltEnter: _react2.default.PropTypes.func,
 	    onCtrlEnter: _react2.default.PropTypes.func,
-	    onShiftEnter: _react2.default.PropTypes.func
+	    onShiftEnter: _react2.default.PropTypes.func,
+	    onChange: _react2.default.PropTypes.func
 	  },
 
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
@@ -19904,6 +19908,10 @@
 	  handleInput: function handleInput() {
 	    if (this._isCompositing) return;
 	    this.filterHTML((0, _reactDom.findDOMNode)(this));
+
+	    if (this.props.onChange) {
+	      this.props.onChange(this.getContent());
+	    }
 	  },
 	  handleKeyDown: function handleKeyDown(e) {
 	    if (ENTER_KEY === e.keyCode) {
