@@ -1,3 +1,6 @@
+import React from 'react';
+import {findDOMNode} from 'react-dom';
+
 const ENTER_KEY = 13;
 
 const Editor = React.createClass({
@@ -10,66 +13,28 @@ const Editor = React.createClass({
     onShiftEnter: React.PropTypes.func,
   },
 
-  getInitialState() {
-    return {
-      content: this.props.content,
-    };
+  componentWillReceiveProps(nextProps) {
+    this.setContent(nextProps.content);
   },
 
-  componentDidUpdate() {
-    // content changed
-    // the content has reinserted, so the selection has lost
-    this.restoreRange();
+  setContent(content) {
+    findDOMNode(this).innerHTML = content;
   },
 
   getContent() {
-    let content = this.state.content;
-    // TODO 做层过滤&转换
+    let content = findDOMNode(this).innerHTML;
+    // filter html except emotion
     content = content.replace(/<br[^>]*>/g, '\n');
-    content = content.replace(/<img[^>]*alt="([^"]+)[^>]*>/g, '/$1');
-    content = content.replace(/<img[^>]*>/g, '');
+    content = content.replace(/<img(?!.*data-is=[\'\"]emotion[\'\"])[^>]*>/g, '');
     content = content.trim();
 
     return content;
   },
 
-  setBreakLine() {
-    const s = window.getSelection();
-    const r = document.createRange();
-    s.deleteFromDocument();
-
-    if (s.anchorNode instanceof Text) {
-      s.anchorNode.insertData(s.anchorOffset, '\n');
-      r.setEnd(s.anchorNode, s.anchorOffset + 1);
-      r.collapse();
-      s.removeAllRanges();
-      s.addRange(r);
-    } else {
-      const nextNode = s.anchorNode.childNodes[s.anchorOffset + 1];
-      console.log(nextNode);
-      if (nextNode instanceof Text) {
-        nextNode.insertData(0, '\n');
-        r.setEnd(nextNode, 1);
-        r.collapse();
-        s.removeAllRanges();
-        s.addRange(r);
-      } else {
-        const n = document.createTextNode('\n');
-        const r1 = s.getRangeAt(0);
-        r1.insertNode(n);
-        r1.collapse();
-        s.removeAllRanges();
-        s.addRange(r);
-      }
-    }
-
-    this.saveRange();
-    this.setState({
-      content: this.refs.editor.getDOMNode().innerHTML,
-    });
-  },
-
   insertHTML(_html) {
+    findDOMNode(this).focus();
+    this.restoreRange();
+
     const html = `${_html}<img style="width: 1px; height: 1px;">`;
     const s = window.getSelection();
     const r = s.getRangeAt(0);
@@ -81,53 +46,26 @@ const Editor = React.createClass({
     s.removeAllRanges();
     s.addRange(r);
 
-    document.execCommand('Delete', false, null);
+    document.execCommand('Delete', false, null); // this will trigger input
+
     this.saveRange();
   },
 
   // 保存光标位置
   saveRange() {
     const s = window.getSelection();
+    const r = s.getRangeAt(0);
 
-    // 记住相对于父节点的下标
-    // 通过下标定位到哪个textNode
-    // 再通过offset定位到text的位置
-    let node = s.anchorNode;
-    if (node instanceof Text) {
-      this._type = Node.TEXT_NODE;
-      this._index = 0;
-      while (node.previousSibling) {
-        this._index ++;
-        node = node.previousSibling;
-      }
-    } else {
-      this._type = Node.ELEMENT_NODE;
-      this._index = Math.max(0, s.anchorOffset - 1);
-    }
-
-    this._offset = s.anchorOffset;
+    this._range = r;
   },
 
   restoreRange() {
     const s = window.getSelection();
-    const r = document.createRange();
-    const editor = this.refs.editor.getDOMNode();
-    const node = editor.childNodes[this._index];
-
-    console.log('restoreRange', node, this._index, this._offset);
-
-    if (node && Node.TEXT_NODE === this._type) {
-      r.setEnd(node, this._offset);
-      r.collapse();
+    if (this._range) {
       s.removeAllRanges();
-      s.addRange(r);
-    } else if (node && Node.ELEMENT_NODE === this._type) {
-      r.setEndAfter(node);
-      r.collapse();
-      s.removeAllRanges();
-      s.addRange(r);
+      s.addRange(this._range);
     } else {
-      console.log('restoreRange can not find node');
+      findDOMNode(this).focus();
     }
   },
 
@@ -175,11 +113,7 @@ const Editor = React.createClass({
 
   handleInput() {
     if (this._isCompositing) return;
-    this.saveRange();
-    this.filterHTML(this.refs.editor.getDOMNode());
-    this.setState({
-      content: this.refs.editor.getDOMNode().innerHTML,
-    });
+    this.filterHTML(findDOMNode(this));
   },
 
   handleKeyDown(e) {
@@ -215,8 +149,7 @@ const Editor = React.createClass({
         onInput={this.handleInput}
         onKeyDown={this.handleKeyDown}
         onKeyUp={this.handleKeyUp}
-        onMouseUp={this.onMouseUp}
-        dangerouslySetInnerHTML={{__html: this.state.content}} />
+        onMouseUp={this.onMouseUp} />
     );
   },
 });

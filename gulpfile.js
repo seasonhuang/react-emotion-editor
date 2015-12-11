@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var webpack = require('gulp-webpack');
+var babel = require('gulp-babel');
 
 var paths = {
 	src: ['src/*.js', "src/**/*.js"],
@@ -46,4 +47,12 @@ gulp.task('main', function() {
 		.pipe(gulp.dest(paths.dist));
 });
 
-gulp.task('default', ['main', 'example']);
+gulp.task('default', ['main', 'example'], function() {
+	var watcher = gulp.watch([
+		'src/**/*.js',
+		'example/*.js',
+	], ['main', 'example']);
+	watcher.on('change', function(event) {
+		console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
+	});
+});
