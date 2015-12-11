@@ -35,13 +35,15 @@ const Editor = React.createClass({
     findDOMNode(this).focus();
     this.restoreRange();
 
+    // fail to set a break line at the end of content
+    // so append a img ele and then delete to resolve it
     const html = `${_html}<img style="width: 1px; height: 1px;">`;
     const s = window.getSelection();
     const r = s.getRangeAt(0);
     const f = r.createContextualFragment(html);
 
     r.deleteContents();
-    r.insertNode(f); // 尾部换行不行，再insert一个，才能激活，why?
+    r.insertNode(f);
     r.collapse(false);
     s.removeAllRanges();
     s.addRange(r);
@@ -51,7 +53,6 @@ const Editor = React.createClass({
     this.saveRange();
   },
 
-  // 保存光标位置
   saveRange() {
     const s = window.getSelection();
     const r = s.getRangeAt(0);
