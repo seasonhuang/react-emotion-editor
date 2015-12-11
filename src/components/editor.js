@@ -11,6 +11,7 @@ const Editor = React.createClass({
     onAltEnter: React.PropTypes.func,
     onCtrlEnter: React.PropTypes.func,
     onShiftEnter: React.PropTypes.func,
+    onChange: React.PropTypes.func,
   },
 
   componentWillReceiveProps(nextProps) {
@@ -115,6 +116,10 @@ const Editor = React.createClass({
   handleInput() {
     if (this._isCompositing) return;
     this.filterHTML(findDOMNode(this));
+
+    if (this.props.onChange) {
+      this.props.onChange(this.getContent());
+    }
   },
 
   handleKeyDown(e) {

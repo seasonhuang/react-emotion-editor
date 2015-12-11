@@ -31,6 +31,10 @@ var App = React.createClass({
     evt.preventDefault();
   },
 
+  handleChange(content) {
+    console.log('[content changed] ', content);
+  },
+
   renderRecords() {
     return this.state.records.map((record, index) => {
       return (
