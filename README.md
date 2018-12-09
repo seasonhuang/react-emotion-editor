@@ -1,10 +1,10 @@
-#react-emotion-editor
+# react-emotion-editor
 editor which only can display emotion img, other html will be filter to text.
 
-##How to use
+## How to use
 see the example
 
-##License
+## License
 
     The MIT License (MIT)
 
